@@ -91,50 +91,46 @@ def search_rankings(word):
     parse_search_list(tags_ad, "ad", word)
 
 
-def search_leads(word):
-    """
-    リード一覧から売上を検索する
-    """
-    info_company = word + " 売上"
-    soup, search_url = google_search(info_company)
+def search_words(search_word, keyword):
+    info_revenue = search_word + " " + keyword
+    soup, search_url = google_search(info_revenue)
     tags = soup.select(".yuRUbf > a")  # クラスを指定し，aタグのもののみ抽出
-    info_revenue = soup.find("div", class_="Z0LcW")
+    info_revenue = soup.find("div", class_="Z0LcW")  # Googleによる情報表示のタグを抽出
 
-    pattern = "<div.*?>(.*?)</div>"
-
-    
     if info_revenue is not None:
+        pattern = "<div.*?>(.*?)</div>"  # <div>タグを削除
         results = re.findall(pattern, str(info_revenue), re.S)
     else:
         results = ["no data"]
 
-    print(results[0])
-
-    title_lists = []
-    url_lists = []
-
-    tag = tags[0]
-    # 記事タイトルを取得
-    current_title = tag.get_text()  # urlのhref以下を取得
-    # current_title = soup.find('div', class_="uEierd")
-    url = tag.get("href")  # 実行中の記事タイトル，URLを表示
     try:
-        span = tag.get("span")
-    except Exception as e:
-        print(e)
+        tag = tags[0]  # 最上位の記事タイトルを取得
+        current_title = tag.get_text()  # urlのhref以下を取得
+        # current_title = soup.find('div', class_="uEierd")
+        url = tag.get("href")  # 実行中の記事タイトル，URLを表示
+    except IndexError as e:
+        current_title = e
+        url = e
 
-    # csv出力
-    output_list = [info_company, results[0], str(current_title), str(url)]
+    return results[0], current_title, url
 
-    output = open(OUTPUT_DATA, mode="a", newline="")
-    writer = csv.writer(output, lineterminator="\n")
-    writer.writerow(output_list)
-    output.close()
 
-    # ファイル名の繰り上げ
-    file_number += 1
-    title_lists.append(current_title)
-    url_lists.append(url)
+def search_leads(name_company):
+    """
+    リード一覧から売上を検索する
+    """
+    result_revenue, title_revenue, url_revenue = search_words(name_company, "売上")
+    result_people, title_people, url_people = search_words(name_company, "従業員数")
+    output_list = [
+        name_company,
+        result_revenue,
+        result_people,
+        str(title_revenue),
+        str(url_revenue),
+        str(title_people),
+        str(url_people),
+    ]  # csv出力
+    export_csv(output_list)
 
 
 def main():
