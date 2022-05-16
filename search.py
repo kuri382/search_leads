@@ -1,5 +1,6 @@
 import csv
 import re
+import time
 from glob import glob
 
 import chromedriver_binary
@@ -136,10 +137,13 @@ def search_leads(name_company):
 def main():
     with open(INPUT_DATA) as input:
         reader = csv.reader(input)
+        iteration_number = 0
         for word in reader:
-            print(word[0])
-            # search_rankings(word[0]) #検索順位を表示する
-            search_leads(word[0])
+            if iteration_number < 95:
+                print(word[0])
+                # search_rankings(word[0]) #検索順位を表示する
+                search_leads(word[0])
+                iteration_number += 1
     print("csv file has exported")
 
 
